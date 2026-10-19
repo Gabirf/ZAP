@@ -76,7 +76,7 @@ class Zap:
     def get_sites(self, slm: dict):
         """Return all trap coordinates for one SLM block (grid from ``location``, ``r``, ``c``, ``site_seperation``)."""
         x, y = slm['location']
-        sep_x, sep_y = slm['site_seperation']
+        sep_x, sep_y = slm['site_separation']
 
         return [
             (x + i * sep_x, y + j * sep_y)
