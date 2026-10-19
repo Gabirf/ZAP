@@ -140,7 +140,8 @@ class Zap:
                 )
                 cz_circuit = transpile(
                     circuit,
-                    basis_gates=["cz", "id", "u2", "u1", "u3"],
+                    basis_gates=["cz", "rz", "ry"],
+                    # basis_gates=["cz", "id", "u2", "u1", "u3"],
                     optimization_level=opt_level,
                     seed_transpiler=0
                 )
@@ -150,13 +151,28 @@ class Zap:
                 )
                 instruction = cz_circuit.data
                 self.results_code['n_q'] = cz_circuit.num_qubits
+                self.results_code['gate_lookup'] = {}
+                gate_idx = 0
                 for inst in instruction:
+                    op = inst.operation
                     if inst.operation.num_qubits == 2:
                         self.results_code['n_2q_gate'] += 1
                         self.g_q.append((inst.qubits[0]._index, inst.qubits[1]._index))
+                        self.results_code['gate_lookup'][gate_idx] = {
+                            "name": op.name,
+                            "params": [float(p) for p in op.params],
+                            "qubits": [q._index for q in inst.qubits]
+                        }
+                        gate_idx += 1
                     elif inst.operation.name != "measure" and inst.operation.name != "barrier":
                         self.results_code['n_1q_gate'] += 1
                         self.g_q.append((inst.qubits[0]._index, inst.qubits[0]._index))
+                        self.results_code['gate_lookup'][gate_idx] = {
+                            "name": op.name,
+                            "params": [float(p) for p in op.params],
+                            "qubits": [q._index for q in inst.qubits]
+                        }
+                        gate_idx += 1
             elif self.benchmark_type == "json":
                 graphs = json.load(f)
                 for q0, q1 in graphs:
